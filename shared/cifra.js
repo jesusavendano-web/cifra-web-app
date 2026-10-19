@@ -4,6 +4,7 @@
 (function () {
   const PAGES = [
     ['index.html', 'Inventario'],
+    ['login.html', 'Login'],
     ['home.html', 'Home'],
     ['onboarding.html', 'Onboarding'],
     ['chat.html', 'Chat IA'],
@@ -39,6 +40,200 @@
       on = !on; apply();
       try { localStorage.setItem('cifra-show-custom', on ? '1' : '0'); } catch (e) {}
     });
+  }
+
+  // ---------------------------------------------------------------- app shell (sidebar web app)
+  // En el admin de Shopify la navegación la pone s-app-nav; en la web app la pone este sidebar,
+  // inspirado en el de Linear: selector de tienda arriba, búsqueda (⌘K) y nuevo chat, nav principal,
+  // secciones plegables, favoritos y ayuda abajo. Se pliega con "[" o con el botón. Cambios documentados en index.html.
+  const NO_SHELL = ['index.html', 'login.html', 'onboarding.html'];
+  const NAV = [
+    { items: [
+      ['home', 'Home', 'home.html'],
+      ['magic', 'Ask Cifra', 'chat.html', { match: ['chat.html'] }],
+      ['lightbulb', 'Insights', 'insights.html', { count: 3 }],
+    ] },
+    { title: 'Analytics', items: [
+      ['chart-vertical', 'Dashboards', 'dashboard.html', { match: ['dashboard.html', 'dashboard-customize.html'], children: [
+        ['Profit & Loss', 'dashboard.html'],
+        ['All dashboards', 'dashboard.html#all'],
+      ] }],
+      ['file', 'Reports', 'reports.html', { match: ['reports.html', 'report.html', 'report-new.html'] }],
+      ['chart-funnel', 'Metric tree', 'metric-tree.html'],
+      ['calendar-time', 'Schedules', 'schedule.html'],
+    ] },
+    { title: 'Data', items: [
+      ['connect', 'Integrations', 'integrations.html', { match: ['integrations.html', 'integration-meta.html', 'integration-klaviyo.html'] }],
+      ['cash-dollar', 'Costs', 'settings-cost-products.html', { match: ['settings-cost-products.html', 'settings-cost-custom.html', 'settings-cost-shipping.html', 'settings-cost-gateways.html'] }],
+    ] },
+    { title: 'Favorites', items: [
+      ['file', 'Gross Profit by Product', 'report.html', { exact: true }],
+      ['chart-line', 'Customer cohorts', 'report.html#cohorts', { exact: true }],
+    ] },
+  ];
+  const STORES = [['Acme Store', 'acme-store.myshopify.com', '#5b3fd6'], ['Acme EU', 'acme-eu.myshopify.com', '#36c2b4']];
+
+  function appShell() {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    if (NO_SHELL.includes(here) || document.body.dataset.shell === 'none') return;
+    const hash = location.hash;
+    const isActive = (href, opt = {}) => {
+      const [file, h = ''] = href.split('#');
+      if (opt.exact) return file === here && (h ? hash === '#' + h : !hash || hash === '#loading');
+      return (opt.match || [file]).includes(here);
+    };
+    const initials = (s) => s.split(' ').map((w) => w[0]).join('').slice(0, 2);
+    // Un favorito que coincide exacto (p. ej. report.html#cohorts) gana sobre su sección (Reports).
+    const favHit = NAV.some((s) => s.items.some(([, , href, opt = {}]) => opt.exact && isActive(href, opt)));
+    const link = ([icon, label, href, opt = {}]) => {
+      const on = isActive(href, opt) && (opt.exact || !favHit);
+      // Hijo activo: el que coincide por hash; si ninguno (p. ej. el editor del dashboard), el primero.
+      const kidIdx = opt.children ? Math.max(0, opt.children.findIndex(([, h]) => h.includes('#') && hash === '#' + h.split('#')[1])) : -1;
+      const kids = opt.children ? `<div class="c-sb__sub">${opt.children.map(([l, h], i) =>
+        `<a href="${h}" class="c-sb__item c-sb__item--sub"${on && i === kidIdx ? ' aria-current="page"' : ''}><span class="c-sb__dot" aria-hidden="true"></span>${l}</a>`
+      ).join('')}</div>` : '';
+      return `<a href="${href}" class="c-sb__item"${on && !opt.children ? ' aria-current="page"' : ''}${on && opt.children ? ' data-open-parent' : ''}>` +
+        `<s-icon type="${icon}" size="small"></s-icon><span class="c-sb__label">${label}</span>` +
+        (opt.count ? `<span class="c-sb__count">${opt.count}</span>` : '') + `</a>${kids}`;
+    };
+    const collapsedSections = (() => { try { return JSON.parse(localStorage.getItem('cifra-sb-sections') || '[]'); } catch (e) { return []; } })();
+    const section = (s) => s.title
+      ? `<div class="c-sb__section"${collapsedSections.includes(s.title) ? ' data-collapsed' : ''}><button type="button" class="c-sb__heading" aria-expanded="${!collapsedSections.includes(s.title)}">${s.title}<s-icon type="chevron-down" size="small"></s-icon></button><div class="c-sb__group">${s.items.map(link).join('')}</div></div>`
+      : `<div class="c-sb__group">${s.items.map(link).join('')}</div>`;
+    const [store, domain, color] = STORES[0];
+
+    const sb = document.createElement('aside');
+    sb.className = 'c-sidebar';
+    sb.setAttribute('aria-label', 'Main navigation');
+    sb.dataset.custom = 'Sidebar (web app)';
+    sb.innerHTML = `
+      <div class="c-sb__top">
+        <span class="c-popover-anchor c-sb__wsanchor">
+          <button type="button" class="c-sb__ws" data-popover-trigger="sb-ws-menu" aria-haspopup="menu">
+            <span class="c-sb__avatar" style="background:${color}">${initials(store)}</span><span class="c-sb__wsname">${store}</span><s-icon type="chevron-down" size="small"></s-icon>
+          </button>
+          <div class="c-popover c-sb__menu" id="sb-ws-menu" role="menu">
+            <div class="c-sb__menuhead">jesus@acme-store.com</div>
+            <a role="menuitem" href="settings.html"><s-icon type="settings" size="small"></s-icon>Settings</a>
+            <a role="menuitem" href="settings.html#stores"><s-icon type="person" size="small"></s-icon>Invite and manage members</a>
+            <hr>
+            <div class="c-sb__menuhead">Switch store</div>
+            ${STORES.map(([n, d, c], i) => `<a role="menuitemradio" aria-checked="${i === 0}" href="home.html"><span class="c-sb__avatar c-sb__avatar--sm" style="background:${c}">${initials(n)}</span><span class="c-sb__menutext">${n}<small>${d}</small></span>${i === 0 ? '<s-icon type="check" size="small"></s-icon>' : ''}</a>`).join('')}
+            <a role="menuitem" href="onboarding.html"><s-icon type="plus" size="small"></s-icon>Add store</a>
+            <hr>
+            <a role="menuitem" href="login.html"><s-icon type="exit" size="small"></s-icon>Log out</a>
+          </div>
+        </span>
+        <button type="button" class="c-sb__iconbtn" data-cmdk aria-label="Search (Ctrl K)" title="Search  ⌘K"><s-icon type="search" size="small"></s-icon></button>
+        <a class="c-sb__iconbtn c-sb__iconbtn--solid" href="chat.html#empty" aria-label="New chat" title="New chat"><s-icon type="compose" size="small"></s-icon></a>
+      </div>
+      <nav class="c-sb__nav">${NAV.map(section).join('')}</nav>
+      <div class="c-sb__bottom">
+        <a href="settings.html" class="c-sb__item"${here === 'settings.html' ? ' aria-current="page"' : ''}><s-icon type="settings" size="small"></s-icon><span class="c-sb__label">Settings</span></a>
+        <a href="settings.html#resources" class="c-sb__item"><s-icon type="question-circle" size="small"></s-icon><span class="c-sb__label">Help &amp; support</span></a>
+        <div class="c-sb__sync"><span class="c-sb__syncdot" aria-hidden="true"></span>Synced 5 min ago<span class="c-sb__sources"><img src="assets/logos/shopify-mark.svg" alt="Shopify"><img src="assets/logos/meta_ads.svg" alt="Meta Ads"><img src="assets/logos/klaviyo.svg" alt="Klaviyo"></span></div>
+      </div>
+      <button type="button" class="c-sb__collapse" data-sb-toggle aria-label="Collapse sidebar ( [ )" title="Collapse sidebar  ["><s-icon type="layout-sidebar-left" size="small"></s-icon></button>`;
+
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'c-sb__open';
+    open.dataset.sbToggle = '';
+    open.setAttribute('aria-label', 'Open sidebar');
+    open.innerHTML = '<s-icon type="layout-sidebar-left" size="small"></s-icon>';
+    const scrim = document.createElement('div');
+    scrim.className = 'c-sb__scrim';
+    scrim.dataset.sbToggle = '';
+
+    document.body.classList.add('has-shell');
+    document.body.prepend(sb, open, scrim);
+
+    // Plegado: escritorio recuerda el estado; en móvil el sidebar es un drawer cerrado por defecto.
+    const mobile = matchMedia('(max-width: 768px)');
+    let collapsed = false;
+    try { collapsed = localStorage.getItem('cifra-sb-collapsed') === '1'; } catch (e) {}
+    let drawer = false;
+    const apply = () => {
+      document.body.classList.toggle('sb-collapsed', mobile.matches ? !drawer : collapsed);
+      document.body.classList.toggle('sb-drawer', mobile.matches && drawer);
+    };
+    const toggle = () => {
+      if (mobile.matches) drawer = !drawer;
+      else { collapsed = !collapsed; try { localStorage.setItem('cifra-sb-collapsed', collapsed ? '1' : '0'); } catch (e) {} }
+      apply();
+    };
+    apply();
+    mobile.addEventListener('change', () => { drawer = false; apply(); });
+    document.querySelectorAll('[data-sb-toggle]').forEach((b) => b.addEventListener('click', toggle));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '[' && !e.metaKey && !e.ctrlKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !document.activeElement.isContentEditable && !e.composedPath().some((n) => n.tagName && /^S-.*(FIELD|AREA)$/.test(n.tagName))) toggle();
+    });
+
+    // Las pantallas leen su estado del hash solo al cargar (#all, #cohorts, #empty…): un link a la
+    // misma página con otro hash recarga para que el estado se aplique.
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('.c-sidebar a[href], .c-cmdk a[href]');
+      if (!a) return;
+      const url = new URL(a.href, location.href);
+      if (url.pathname === location.pathname && url.hash !== location.hash) { e.preventDefault(); location.href = url.href; location.reload(); }
+    });
+
+    sb.querySelectorAll('.c-sb__heading').forEach((h) => h.addEventListener('click', () => {
+      const s = h.parentElement, name = h.firstChild.textContent;
+      const now = !s.hasAttribute('data-collapsed');
+      s.toggleAttribute('data-collapsed', now);
+      h.setAttribute('aria-expanded', String(!now));
+      const list = collapsedSections.filter((x) => x !== name).concat(now ? [name] : []);
+      collapsedSections.splice(0, collapsedSections.length, ...list);
+      try { localStorage.setItem('cifra-sb-sections', JSON.stringify(list)); } catch (e) {}
+    }));
+
+    // La barra de prototipos es sticky y de alto variable: el sidebar arranca debajo de ella.
+    const bar = document.querySelector('.proto-bar');
+    const setTop = () => document.documentElement.style.setProperty('--c-proto-h', (bar ? bar.offsetHeight : 0) + 'px');
+    setTop();
+    if (bar && window.ResizeObserver) new ResizeObserver(setTop).observe(bar);
+
+    commandMenu();
+  }
+
+  // Búsqueda tipo Linear (⌘K / Ctrl K): salta a cualquier pantalla o reporte.
+  function commandMenu() {
+    const items = [];
+    NAV.forEach((s) => s.items.forEach(([icon, label, href, opt = {}]) => {
+      items.push([icon, label, href, s.title || 'Go to']);
+      (opt.children || []).forEach(([l, h]) => items.push([icon, l, h, 'Dashboards']));
+    }));
+    items.push(['plus', 'Create custom report', 'report-new.html', 'Actions'], ['compose', 'New chat', 'chat.html#empty', 'Actions'],
+      ['plus', 'Connect an integration', 'integrations.html', 'Actions'], ['settings', 'Settings', 'settings.html', 'Go to'], ['exit', 'Log out', 'login.html', 'Actions']);
+    const dlg = document.createElement('dialog');
+    dlg.className = 'c-cmdk';
+    dlg.setAttribute('aria-label', 'Search');
+    dlg.dataset.custom = 'CommandMenu';
+    dlg.innerHTML = `<div class="c-cmdk__field"><s-icon type="search" size="small"></s-icon><input type="text" placeholder="Search pages, reports and actions…" aria-label="Search"><kbd>Esc</kbd></div><div class="c-cmdk__list" role="listbox"></div>`;
+    document.body.append(dlg);
+    const input = dlg.querySelector('input'), list = dlg.querySelector('.c-cmdk__list');
+    let sel = 0, shown = [];
+    const render = () => {
+      const q = input.value.trim().toLowerCase();
+      shown = items.filter(([, l, , g]) => !q || l.toLowerCase().includes(q) || g.toLowerCase().includes(q));
+      sel = Math.min(sel, Math.max(0, shown.length - 1));
+      let last = '';
+      list.innerHTML = shown.length ? shown.map(([icon, l, h, g], i) => {
+        const head = g !== last ? `<div class="c-cmdk__group">${(last = g)}</div>` : '';
+        return `${head}<a role="option" href="${h}" aria-selected="${i === sel}"><s-icon type="${icon}" size="small"></s-icon>${l}</a>`;
+      }).join('') : '<div class="c-cmdk__empty">No results</div>';
+    };
+    const show = () => { input.value = ''; sel = 0; render(); dlg.showModal(); input.focus(); };
+    input.addEventListener('input', () => { sel = 0; render(); });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + shown.length) % shown.length; render(); list.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' }); }
+      if (e.key === 'Enter' && shown[sel]) list.querySelector('[aria-selected="true"]').click();
+    });
+    list.addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    document.querySelectorAll('[data-cmdk]').forEach((b) => b.addEventListener('click', show));
+    document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); dlg.open ? dlg.close() : show(); } });
   }
 
   // ---------------------------------------------------------------- tabs & segmented
@@ -601,6 +796,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     protoBar();
+    appShell();
     hydrate();
     metricTips();
     datePickers();
