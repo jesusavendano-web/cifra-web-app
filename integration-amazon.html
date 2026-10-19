@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Integration · Amazon</title>
+<meta name="shopify-api-key" content="prototype">
+<script src="https://cdn.shopify.com/shopifycloud/polaris-2.0-rc.js"></script>
+<link rel="stylesheet" href="shared/cifra.css">
+<script src="shared/cifra.js" defer></script>
+<style>
+  [data-step][hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<!--
+  Pantalla: Integrations › Amazon (/app/integrations/amazon)
+  Patrón OAuth (como Meta) + configuración propia de Amazon. 100% nativo.
+  Flujo (hash):
+    #connect (default) → región + "Sign in with Amazon Seller Central" (OAuth del SP-API)
+    #marketplaces      → elegir marketplaces, cómo verlos en Cifra (tienda aparte o combinada) e historial a importar
+    #connected         → estado Active, progreso de la importación, marketplaces conectados, Refresh / Disconnect
+  Amazon se suma al selector multi-tienda del sidebar: cada marketplace puede verse por separado o combinado con Shopify.
+-->
+<s-page heading="Amazon" inlineSize="base">
+  <s-link slot="breadcrumb-actions" href="integrations.html">Integrations</s-link>
+
+  <!-- Paso 1: conectar -->
+  <s-stack gap="base" data-step="connect">
+    <s-section>
+      <s-stack gap="base" alignItems="center" paddingBlock="large">
+        <img src="assets/logos/amazon.svg" alt="" width="48" height="48">
+        <s-stack gap="none" alignItems="center">
+          <s-heading>Connect Amazon Seller Central</s-heading>
+          <s-text color="subdued">Bring your Amazon sales and fees into the same profit view as your Shopify stores.</s-text>
+        </s-stack>
+        <s-box inlineSize="320px">
+          <s-stack gap="base">
+            <s-select label="Seller Central region" name="region" data-region>
+              <s-option value="na" selected>North America (US, CA, MX, BR)</s-option>
+              <s-option value="eu">Europe (UK, DE, FR, IT, ES, NL, SE, PL)</s-option>
+              <s-option value="fe">Far East (JP, AU, SG)</s-option>
+            </s-select>
+            <s-button variant="primary" icon="external" inlineSize="fill" data-go="marketplaces">Sign in with Amazon</s-button>
+          </s-stack>
+        </s-box>
+      </s-stack>
+    </s-section>
+
+    <s-section heading="What Cifra imports">
+      <s-unordered-list>
+        <s-list-item>Orders, units and revenue per marketplace</s-list-item>
+        <s-list-item>Refunds and returns</s-list-item>
+        <s-list-item>Amazon fees: referral, FBA fulfillment and storage — added to your costs automatically</s-list-item>
+        <s-list-item>Product costs matched by SKU with your Shopify products</s-list-item>
+      </s-unordered-list>
+    </s-section>
+
+    <s-banner tone="info">Cifra only requests read access. You can disconnect at any time from this page or from Seller Central › Apps and services.</s-banner>
+  </s-stack>
+
+  <!-- Paso 2: marketplaces -->
+  <s-stack gap="base" data-step="marketplaces" hidden>
+    <s-banner tone="success" heading="Amazon account authorized">Acme Brands LLC · Seller ID A2X9KQ7T1ZP4M</s-banner>
+
+    <s-section heading="Marketplaces">
+      <s-choice-list label="Choose the marketplaces to import" name="marketplaces" multiple>
+        <s-choice value="us" selected>Amazon.com (United States)<s-text slot="details">USD · 1,284 orders in the last 30 days</s-text></s-choice>
+        <s-choice value="ca" selected>Amazon.ca (Canada)<s-text slot="details">CAD · 212 orders in the last 30 days</s-text></s-choice>
+        <s-choice value="mx">Amazon.com.mx (Mexico)<s-text slot="details">MXN · 38 orders in the last 30 days</s-text></s-choice>
+        <s-choice value="br" disabled>Amazon.com.br (Brazil)<s-text slot="details">Not active on this account</s-text></s-choice>
+      </s-choice-list>
+    </s-section>
+
+    <s-section heading="How to show Amazon in Cifra">
+      <s-choice-list label="Store view" labelAccessibilityVisibility="exclusive" name="view">
+        <s-choice value="separate" selected>As its own store<s-text slot="details">“Amazon” appears in the store selector. View it alone or combined with your Shopify stores.</s-text></s-choice>
+        <s-choice value="merge">Merged into Acme Store<s-text slot="details">Amazon orders count as Acme Store sales. You can still filter by sales channel.</s-text></s-choice>
+      </s-choice-list>
+    </s-section>
+
+    <s-section heading="Import history">
+      <s-stack gap="base">
+        <s-select label="Import data from" name="history">
+          <s-option value="12m" selected>Last 12 months</s-option>
+          <s-option value="24m">Last 24 months</s-option>
+          <s-option value="all">All available history</s-option>
+        </s-select>
+        <s-text color="subdued">The first import usually takes 10–30 minutes. We'll let you know when it's done.</s-text>
+      </s-stack>
+    </s-section>
+
+    <s-stack direction="inline" gap="small-200" justifyContent="end">
+      <s-button data-go="connect">Back</s-button>
+      <s-button variant="primary" data-go="connected">Start import</s-button>
+    </s-stack>
+  </s-stack>
+
+  <!-- Paso 3: conectado -->
+  <s-stack gap="base" data-step="connected" hidden>
+    <s-grid gridTemplateColumns="1fr 1fr" gap="base">
+      <s-section heading="Status">
+        <s-badge tone="success">Active</s-badge>
+      </s-section>
+      <s-section heading="Last sync">
+        <s-text>Importing… started Oct 19, 2026 at 8:02 AM</s-text>
+      </s-section>
+    </s-grid>
+
+    <s-section heading="Importing your Amazon history">
+      <s-stack gap="small-200">
+        <s-progress value="0.42" accessibilityLabel="Import progress"></s-progress>
+        <s-text color="subdued">42% · Orders imported through May 2026. Your reports update as data arrives.</s-text>
+      </s-stack>
+    </s-section>
+
+    <s-section heading="Connected marketplaces" padding="none">
+      <s-table>
+        <s-table-header-row>
+          <s-table-header>Marketplace</s-table-header>
+          <s-table-header>Currency</s-table-header>
+          <s-table-header>In Cifra</s-table-header>
+          <s-table-header>Status</s-table-header>
+        </s-table-header-row>
+        <s-table-body>
+          <s-table-row>
+            <s-table-cell>Amazon.com (United States)</s-table-cell>
+            <s-table-cell>USD</s-table-cell>
+            <s-table-cell>Amazon store</s-table-cell>
+            <s-table-cell><s-badge tone="info">Importing</s-badge></s-table-cell>
+          </s-table-row>
+          <s-table-row>
+            <s-table-cell>Amazon.ca (Canada)</s-table-cell>
+            <s-table-cell>CAD → USD</s-table-cell>
+            <s-table-cell>Amazon store</s-table-cell>
+            <s-table-cell><s-badge>Queued</s-badge></s-table-cell>
+          </s-table-row>
+        </s-table-body>
+      </s-table>
+    </s-section>
+
+    <s-stack direction="inline" gap="small-200" justifyContent="end">
+      <s-button icon="refresh" disabled>Refresh</s-button>
+      <s-button icon="delete" tone="critical" data-go="connect">Disconnect</s-button>
+    </s-stack>
+  </s-stack>
+</s-page>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const steps = document.querySelectorAll("[data-step]");
+  const route = () => {
+    const h = location.hash.slice(1);
+    const step = ["marketplaces", "connected"].includes(h) ? h : "connect";
+    steps.forEach((s) => { s.hidden = s.dataset.step !== step; });
+    window.scrollTo(0, 0);
+  };
+  window.addEventListener("hashchange", route);
+  route();
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => { location.hash = b.dataset.go; }));
+});
+</script>
+
+</body>
+</html>

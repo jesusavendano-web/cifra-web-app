@@ -25,8 +25,32 @@
   <s-stack gap="base">
 
     <s-banner tone="info" heading="Cómo usar estos prototipos">
-      <s-paragraph>Cada pantalla carga el script real <s-text type="strong">polaris-2.0-rc.js</s-text>, así que lo que ves es lo que renderiza Shopify. Todo lo que no existe como <s-text type="strong">&lt;s-*&gt;</s-text> está en <s-text type="strong">shared/cifra.css</s-text> con clases <s-text type="strong">.c-*</s-text>. Usa “Resaltar custom” en la barra superior para ver qué es custom en cada pantalla. Task: ENG-2281.</s-paragraph>
+      <s-paragraph>Cada pantalla carga el script real <s-text type="strong">polaris-2.0-rc.js</s-text>, así que lo que ves es lo que renderiza Shopify. Todo lo que no existe como <s-text type="strong">&lt;s-*&gt;</s-text> está en <s-text type="strong">shared/cifra.css</s-text> con clases <s-text type="strong">.c-*</s-text>. Usa la acción “Highlight custom components” del buscador (⌘K / Ctrl K) para ver qué es custom en cada pantalla. Task: ENG-2281.</s-paragraph>
     </s-banner>
+
+    <!-- Web app (ENG-2314) -->
+    <s-section heading="Web app: cambios respecto a la app embebida en Shopify (ENG-2314)">
+      <s-stack gap="base">
+        <s-paragraph>Fuera del admin de Shopify no existen ni la navegación (<s-text type="strong">s-app-nav</s-text>) ni el login, así que la web app suma dos piezas. El resto de pantallas se mantiene igual.</s-paragraph>
+        <s-unordered-list>
+          <s-list-item><s-text type="strong">Sidebar (inspirado en Linear):</s-text> lo inyecta <s-text type="strong">shared/cifra.js</s-text> (<s-text type="strong">appShell</s-text>) en todas las pantallas salvo Inventario, Login y Onboarding. Ancho 244px, fondo #ebebeb, ítems de 28px, ítem activo en blanco con borde sutil.</s-list-item>
+          <s-list-item><s-text type="strong">Arriba:</s-text> selector de tiendas (cuenta, invitar miembros, tiendas, agregar tienda, log out) y búsqueda ⌘K / Ctrl K.</s-list-item>
+          <s-list-item><s-text type="strong">Multi-tienda:</s-text> se puede elegir una tienda, varias o <s-text type="strong">All stores</s-text>. Con más de una, los datos se ven combinados y convertidos a la moneda de reporte (USD); “Only” (al pasar el mouse) deja una sola tienda para verla por separado. La selección se recuerda y se muestra como pill en la barra de filtros de Dashboards, Reportes y Metric tree, que abre el mismo selector.</s-list-item>
+          <s-list-item><s-text type="strong">Navegación:</s-text> Home, Ask Cifra (chat), Insights (con contador) · <s-text type="strong">Analytics:</s-text> Dashboards (con dashboards fijados), Reports, Metric tree, Schedules · <s-text type="strong">Data:</s-text> Integrations, Costs · <s-text type="strong">Favorites:</s-text> reportes favoritos. Las secciones se pliegan y recuerdan su estado.</s-list-item>
+          <s-list-item><s-text type="strong">Abajo:</s-text> Settings, Help &amp; support y estado de sincronización con las fuentes conectadas.</s-list-item>
+          <s-list-item><s-text type="strong">Plegar:</s-text> tecla <s-text type="strong">[</s-text> o el botón al pasar el mouse por el sidebar; en pantallas ≤768px pasa a ser un drawer con fondo oscurecido.</s-list-item>
+          <s-list-item><s-text type="strong">Settings sigue con su nav interna:</s-text> el sidebar lleva a Settings y a Costs; las secciones de Settings no se duplican en el sidebar.</s-list-item>
+          <s-list-item><s-text type="strong">Login:</s-text> 100% Web Components 2.0-rc, con el patrón del login actual de Shopify: card, email + “Continue with email” (primario), separador “or” y botones con el logo de Shopify y Google. El email recibe un código de 6 dígitos. Sign up usa el mismo flujo y termina en Onboarding; Log in termina en Home.</s-list-item>
+        </s-unordered-list>
+        <s-grid gridTemplateColumns="1fr 1fr 1fr" gap="base">
+          <s-clickable href="login.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Log in</s-text><s-text color="subdued">Email → código, Shopify o Google. Hash: #check-email</s-text></s-stack></s-clickable>
+          <s-clickable href="login.html#signup" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Sign up</s-text><s-text color="subdued">Mismo flujo que Log in, termina en Onboarding</s-text></s-stack></s-clickable>
+          <s-clickable href="home.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Sidebar</s-text><s-text color="subdued">Se ve en cualquier pantalla de la app. Prueba ⌘K y la tecla [</s-text></s-stack></s-clickable>
+          <s-clickable href="integration-amazon.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Integración · Amazon</s-text><s-text color="subdued">OAuth con Seller Central: región → Sign in with Amazon → marketplaces, vista como tienda aparte o combinada, historial → importación. Hash: #marketplaces, #connected</s-text></s-stack></s-clickable>
+          <s-clickable href="integration-omnisend.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Integración · Omnisend</s-text><s-text color="subdued">API key (como Klaviyo): pegar key → Save valida → Active con datos sincronizados (campañas, automatizaciones, órdenes atribuidas, costo SMS). Hash: #connected</s-text></s-stack></s-clickable>
+        </s-grid>
+      </s-stack>
+    </s-section>
 
     <!-- Pantallas -->
     <s-section heading="Pantallas">
@@ -44,7 +68,7 @@
         <s-clickable href="settings.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Settings (7 secciones + 4 páginas de costos)</s-text><s-text color="subdued">General, Costs, Reporting, Billing, Resources, Stores, Security · Custom / Product / Shipping / Gateway costs + modal Add Costs</s-text></s-stack></s-clickable>
         <s-clickable href="metric-tree.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Metric tree · Net Profit</s-text><s-text color="subdued">Canvas con pan/zoom, nodos, conectores +/−, panel de métricas</s-text></s-stack></s-clickable>
         <s-clickable href="insights.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Insights</s-text><s-text color="subdued">Tabs Active/Dismissed, filtros Type/Source, orden, cards</s-text></s-stack></s-clickable>
-        <s-clickable href="integrations.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Integrations</s-text><s-text color="subdued">Lista por categoría + detalle OAuth (Meta) y API key (Klaviyo)</s-text></s-stack></s-clickable>
+        <s-clickable href="integrations.html" padding="base" border="base" borderRadius="large"><s-stack gap="small-200"><s-text type="strong">Integrations</s-text><s-text color="subdued">Lista por categoría + detalle OAuth (Meta, Amazon) y API key (Klaviyo, Omnisend)</s-text></s-stack></s-clickable>
         <s-box padding="base" border="base subdued dashed" borderRadius="large"><s-stack gap="small-200"><s-text type="strong" color="subdued">Pendiente</s-text><s-text color="subdued">Onboarding (después del mapeo), Chat IA</s-text></s-stack></s-box>
       </s-grid>
     </s-section>
