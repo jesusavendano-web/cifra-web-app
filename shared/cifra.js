@@ -2,44 +2,13 @@
 // En la app real esto vive en React; aquí es vanilla para que el HTML sea autocontenido.
 
 (function () {
-  const PAGES = [
-    ['index.html', 'Inventario'],
-    ['login.html', 'Login'],
-    ['home.html', 'Home'],
-    ['onboarding.html', 'Onboarding'],
-    ['chat.html', 'Chat IA'],
-    ['dashboard.html', 'Dashboard'],
-    ['reports.html', 'Reports'],
-    ['report.html', 'Reporte'],
-    ['metric-tree.html', 'Metric tree'],
-    ['insights.html', 'Insights'],
-    ['integrations.html', 'Integrations'],
-    ['schedule.html', 'Schedule'],
-    ['settings.html', 'Settings'],
-  ];
-
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
-
-  // ---------------------------------------------------------------- proto bar
-  function protoBar() {
-    const here = location.pathname.split('/').pop() || 'index.html';
-    const bar = document.createElement('nav');
-    bar.className = 'proto-bar';
-    bar.setAttribute('aria-label', 'Prototipos');
-    bar.innerHTML = '<strong>Cifra · Web Components 2.0-rc</strong>' +
-      PAGES.map(([href, label]) => `<a href="${href}"${href === here ? ' aria-current="page"' : ''}>${label}</a>`).join('') +
-      '<span class="spacer"></span><button type="button" aria-pressed="false" data-toggle-custom>Resaltar custom</button>';
-    document.body.prepend(bar);
-    const btn = bar.querySelector('[data-toggle-custom]');
+  // ---------------------------------------------------------------- resaltar custom
+  // Marca con borde rojo todo lo que lleva data-custom (lo que no es <s-*> nativo). Se activa desde ⌘K.
+  function showCustom(toggle) {
     let on = false;
     try { on = localStorage.getItem('cifra-show-custom') === '1'; } catch (e) {}
-    const apply = () => { document.body.classList.toggle('show-custom', on); btn.setAttribute('aria-pressed', String(on)); };
-    apply();
-    btn.addEventListener('click', () => {
-      on = !on; apply();
-      try { localStorage.setItem('cifra-show-custom', on ? '1' : '0'); } catch (e) {}
-    });
+    if (toggle) { on = !on; try { localStorage.setItem('cifra-show-custom', on ? '1' : '0'); } catch (e) {} }
+    document.body.classList.toggle('show-custom', on);
   }
 
   // ---------------------------------------------------------------- app shell (sidebar web app)
@@ -188,11 +157,6 @@
       try { localStorage.setItem('cifra-sb-sections', JSON.stringify(list)); } catch (e) {}
     }));
 
-    // La barra de prototipos es sticky y de alto variable: el sidebar arranca debajo de ella.
-    const bar = document.querySelector('.proto-bar');
-    const setTop = () => document.documentElement.style.setProperty('--c-proto-h', (bar ? bar.offsetHeight : 0) + 'px');
-    setTop();
-    if (bar && window.ResizeObserver) new ResizeObserver(setTop).observe(bar);
 
     commandMenu();
   }
@@ -205,7 +169,7 @@
       (opt.children || []).forEach(([l, h]) => items.push([icon, l, h, 'Dashboards']));
     }));
     items.push(['plus', 'Create custom report', 'report-new.html', 'Actions'], ['compose', 'New chat', 'chat.html#empty', 'Actions'],
-      ['plus', 'Connect an integration', 'integrations.html', 'Actions'], ['settings', 'Settings', 'settings.html', 'Go to'], ['exit', 'Log out', 'login.html', 'Actions']);
+      ['plus', 'Connect an integration', 'integrations.html', 'Actions'], ['settings', 'Settings', 'settings.html', 'Go to'], ['exit', 'Log out', 'login.html', 'Actions'], ['view', 'Highlight custom components', '#highlight-custom', 'Prototype']);
     const dlg = document.createElement('dialog');
     dlg.className = 'c-cmdk';
     dlg.setAttribute('aria-label', 'Search');
@@ -230,7 +194,10 @@
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + shown.length) % shown.length; render(); list.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' }); }
       if (e.key === 'Enter' && shown[sel]) list.querySelector('[aria-selected="true"]').click();
     });
-    list.addEventListener('click', () => dlg.close());
+    list.addEventListener('click', (e) => {
+      if (e.target.closest('a')?.getAttribute('href') === '#highlight-custom') { e.preventDefault(); e.stopPropagation(); showCustom(true); }
+      dlg.close();
+    });
     dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
     document.querySelectorAll('[data-cmdk]').forEach((b) => b.addEventListener('click', show));
     document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); dlg.open ? dlg.close() : show(); } });
@@ -795,7 +762,7 @@
   window.CifraAssets = { hydrate };
 
   document.addEventListener('DOMContentLoaded', () => {
-    protoBar();
+    showCustom();
     appShell();
     hydrate();
     metricTips();
