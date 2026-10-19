@@ -27,7 +27,7 @@
   separador "or" y botones de proveedor con su logo; el código llega por email.
   Pasos (hash): #login (default) → #check-email → home.html
                 #signup → #check-email → onboarding.html
-  Nativo → s-section, s-stack, s-grid, s-clickable (botones de proveedor, 48px de alto), s-text, s-email-field, s-text-field, s-button, s-divider, s-link
+  Nativo → s-section, s-stack, s-grid, s-clickable (botones de proveedor, 58px de alto), s-text, s-email-field, s-text-field, s-button, s-divider, s-link
   Custom → centrado de la página (.c-auth) y el título h1 (s-heading no tiene tamaño)
 -->
 <main class="c-auth" data-custom="AuthLayout">
@@ -56,8 +56,8 @@
         </s-grid>
 
         <s-grid gridTemplateColumns="1fr 1fr" gap="base" class="c-auth__social">
-          <s-clickable border="base" borderRadius="large" background="subdued" blockSize="48px" inlineSize="100%" accessibilityLabel="Continue with Shopify" data-finish><s-stack alignItems="center" justifyContent="center" blockSize="100%"><img src="assets/logos/shopify-mark.svg" alt=""></s-stack></s-clickable>
-          <s-clickable border="base" borderRadius="large" background="subdued" blockSize="48px" inlineSize="100%" accessibilityLabel="Continue with Google" data-finish><s-stack alignItems="center" justifyContent="center" blockSize="100%"><img src="assets/logos/google.svg" alt=""></s-stack></s-clickable>
+          <s-clickable border="base" borderRadius="large" background="subdued" blockSize="58px" inlineSize="100%" accessibilityLabel="Continue with Shopify" data-finish><s-stack alignItems="center" justifyContent="center" blockSize="100%"><img src="assets/logos/shopify-mark.svg" alt=""></s-stack></s-clickable>
+          <s-clickable border="base" borderRadius="large" background="subdued" blockSize="58px" inlineSize="100%" accessibilityLabel="Continue with Google" data-finish><s-stack alignItems="center" justifyContent="center" blockSize="100%"><img src="assets/logos/google.svg" alt=""></s-stack></s-clickable>
         </s-grid>
 
         <div data-mode="login"><s-stack direction="inline" gap="small-200" justifyContent="center"><s-text color="subdued">New to Cifra?</s-text><s-link href="#signup">Get started</s-link></s-stack></div>
