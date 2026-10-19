@@ -13,7 +13,7 @@
 
   // ---------------------------------------------------------------- app shell (sidebar web app)
   // En el admin de Shopify la navegación la pone s-app-nav; en la web app la pone este sidebar,
-  // inspirado en el de Linear: selector de tienda arriba, búsqueda (⌘K) y nuevo chat, nav principal,
+  // inspirado en el de Linear: selector de tienda arriba, búsqueda (⌘K), nav principal,
   // secciones plegables, favoritos y ayuda abajo. Se pliega con "[" o con el botón. Cambios documentados en index.html.
   const NO_SHELL = ['index.html', 'login.html', 'onboarding.html'];
   const NAV = [
@@ -94,7 +94,6 @@
           </div>
         </span>
         <button type="button" class="c-sb__iconbtn" data-cmdk aria-label="Search (Ctrl K)" title="Search  ⌘K"><s-icon type="search" size="small"></s-icon></button>
-        <a class="c-sb__iconbtn c-sb__iconbtn--solid" href="chat.html#empty" aria-label="New chat" title="New chat"><s-icon type="compose" size="small"></s-icon></a>
       </div>
       <nav class="c-sb__nav">${NAV.map(section).join('')}</nav>
       <div class="c-sb__bottom">
