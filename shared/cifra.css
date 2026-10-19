@@ -75,7 +75,7 @@ body.has-shell.sb-collapsed::after { left: 0; }
   position: fixed; z-index: 45; left: 0; top: 0; bottom: 0; width: var(--c-sb-w);
   display: flex; flex-direction: column; gap: 4px;
   padding: 10px 10px 8px; background: var(--c-sb-bg); border-right: 1px solid #e0e0e0;
-  transition: transform .18s ease; overflow: hidden;
+  transition: transform .18s ease; /* sin overflow hidden: el menú de tienda sobresale del sidebar */
 }
 body.sb-collapsed .c-sidebar { transform: translateX(-100%); }
 
@@ -95,7 +95,7 @@ body.sb-collapsed .c-sidebar { transform: translateX(-100%); }
 }
 .c-sb__iconbtn:hover { background: var(--c-sb-hover); color: var(--c-text); }
 
-.c-sb__menu { width: 248px; padding: 6px; left: 0; }
+.c-sb__menu { width: 260px; padding: 6px; left: 0; z-index: 70; }
 .c-sb__menu a { display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 4px 8px; border-radius: 8px; color: var(--c-text); text-decoration: none; }
 .c-sb__menu a:hover { background: var(--c-surface-hover); }
 .c-sb__menu a > s-icon:last-child:not(:first-child) { margin-left: auto; }
