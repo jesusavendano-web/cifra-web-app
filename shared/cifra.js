@@ -40,7 +40,9 @@
       ['chart-line', 'Customer cohorts', 'report.html#cohorts', { exact: true }],
     ] },
   ];
-  const STORES = [['Acme Store', 'acme-store.myshopify.com', '#5b3fd6'], ['Acme EU', 'acme-eu.myshopify.com', '#36c2b4']];
+  // Multi-tienda: se puede ver una tienda, varias o todas a la vez (datos combinados y convertidos a la moneda de reporte).
+  const STORES = [['Acme Store', 'acme-store.myshopify.com', '#5b3fd6', 'USD'], ['Acme EU', 'acme-eu.myshopify.com', '#36c2b4', 'EUR'], ['Acme UK', 'acme-uk.myshopify.com', '#e0448f', 'GBP']];
+  const REPORTING_CURRENCY = 'USD';
 
   function appShell() {
     const here = location.pathname.split('/').pop() || 'index.html';
@@ -69,7 +71,11 @@
     const section = (s) => s.title
       ? `<div class="c-sb__section"${collapsedSections.includes(s.title) ? ' data-collapsed' : ''}><button type="button" class="c-sb__heading" aria-expanded="${!collapsedSections.includes(s.title)}">${s.title}<s-icon type="chevron-down" size="small"></s-icon></button><div class="c-sb__group">${s.items.map(link).join('')}</div></div>`
       : `<div class="c-sb__group">${s.items.map(link).join('')}</div>`;
-    const [store, domain, color] = STORES[0];
+    let stores = (() => { try { const s = JSON.parse(localStorage.getItem('cifra-stores')); if (Array.isArray(s) && s.length && s.every((i) => STORES[i])) return s; } catch (e) {} return [0]; })();
+    const avatar = (i, sm) => `<span class="c-sb__avatar${sm ? ' c-sb__avatar--sm' : ''}" style="background:${STORES[i][2]}">${initials(STORES[i][0])}</span>`;
+    const stack = (idx) => `<span class="c-sb__stack">${idx.slice(0, 3).map((i) => avatar(i, true)).join('')}</span>`;
+    const check = '<span class="c-sb__check" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+    const allIdx = STORES.map((_, i) => i);
 
     const sb = document.createElement('aside');
     sb.className = 'c-sidebar';
@@ -79,15 +85,17 @@
       <div class="c-sb__top">
         <span class="c-popover-anchor c-sb__wsanchor">
           <button type="button" class="c-sb__ws" data-popover-trigger="sb-ws-menu" aria-haspopup="menu">
-            <span class="c-sb__avatar" style="background:${color}">${initials(store)}</span><span class="c-sb__wsname">${store}</span><s-icon type="chevron-down" size="small"></s-icon>
+            <span data-ws-label></span><s-icon type="chevron-down" size="small"></s-icon>
           </button>
           <div class="c-popover c-sb__menu" id="sb-ws-menu" role="menu">
             <div class="c-sb__menuhead">jesus@acme-store.com</div>
             <a role="menuitem" href="settings.html"><s-icon type="settings" size="small"></s-icon>Settings</a>
             <a role="menuitem" href="settings.html#stores"><s-icon type="person" size="small"></s-icon>Invite and manage members</a>
             <hr>
-            <div class="c-sb__menuhead">Switch store</div>
-            ${STORES.map(([n, d, c], i) => `<a role="menuitemradio" aria-checked="${i === 0}" href="home.html"><span class="c-sb__avatar c-sb__avatar--sm" style="background:${c}">${initials(n)}</span><span class="c-sb__menutext">${n}<small>${d}</small></span>${i === 0 ? '<s-icon type="check" size="small"></s-icon>' : ''}</a>`).join('')}
+            <div class="c-sb__menuhead">Stores<span>Select one or more</span></div>
+            <button type="button" role="menuitemcheckbox" class="c-sb__store" data-store="all">${check}${stack(allIdx)}<span class="c-sb__menutext">All stores<small>Combined data in ${REPORTING_CURRENCY}</small></span></button>
+            ${STORES.map(([n, d, , cur], i) => `<div class="c-sb__storerow"><button type="button" role="menuitemcheckbox" class="c-sb__store" data-store="${i}">${check}${avatar(i, true)}<span class="c-sb__menutext">${n}<small>${d} · ${cur}</small></span></button><button type="button" class="c-sb__only" data-only="${i}" aria-label="View only ${n}">Only</button></div>`).join('')}
+            <p class="c-sb__storenote" data-store-note hidden></p>
             <a role="menuitem" href="onboarding.html"><s-icon type="plus" size="small"></s-icon>Add store</a>
             <hr>
             <a role="menuitem" href="login.html"><s-icon type="exit" size="small"></s-icon>Log out</a>
@@ -145,6 +153,56 @@
       const url = new URL(a.href, location.href);
       if (url.pathname === location.pathname && url.hash !== location.hash) { e.preventDefault(); location.href = url.href; location.reload(); }
     });
+
+    // Tiendas: una, varias o todas. Con más de una, los datos se combinan (en la app real el API recibe
+    // la lista de tiendas y convierte a la moneda de reporte). "Only" deja una sola tienda para verla por separado.
+    // El filtro de cada pantalla (dashboards, reportes, metric tree) muestra un pill con la selección actual.
+    const wsBtn = sb.querySelector('.c-sb__ws');
+    const scopeLabel = () => stores.length === STORES.length ? 'All stores' : stores.length === 1 ? STORES[stores[0]][0] : `${stores.length} stores`;
+    const scopeIcon = () => stores.length === 1 ? avatar(stores[0]) : stack(stores);
+    const renderStores = () => {
+      sb.querySelector('[data-ws-label]').innerHTML = `${scopeIcon()}<span class="c-sb__wsname">${scopeLabel()}</span>`;
+      const all = stores.length === STORES.length;
+      sb.querySelectorAll('[data-store]').forEach((b) => {
+        const on = b.dataset.store === 'all' ? all : stores.includes(+b.dataset.store);
+        b.setAttribute('aria-checked', String(on));
+      });
+      const note = sb.querySelector('[data-store-note]');
+      note.hidden = stores.length < 2;
+      const currencies = [...new Set(stores.map((i) => STORES[i][3]))];
+      note.textContent = `Showing combined data from ${stores.length} stores` + (currencies.length > 1 || currencies[0] !== REPORTING_CURRENCY ? `, converted to ${REPORTING_CURRENCY}.` : '.');
+      document.querySelectorAll('[data-store-pill]').forEach((p) => { p.innerHTML = `${scopeIcon()}<span>${scopeLabel()}</span><s-icon type="chevron-down" size="small"></s-icon>`; });
+      document.documentElement.dataset.stores = stores.join(',');
+      try { localStorage.setItem('cifra-stores', JSON.stringify(stores)); } catch (e) {}
+      document.dispatchEvent(new CustomEvent('cifra:stores', { detail: stores.map((i) => STORES[i][1]) }));
+    };
+    sb.querySelector('#sb-ws-menu').addEventListener('click', (e) => {
+      const only = e.target.closest('[data-only]');
+      const b = e.target.closest('[data-store]');
+      if (only) stores = [+only.dataset.only];
+      else if (b && b.dataset.store === 'all') stores = stores.length === STORES.length ? [0] : allIdx.slice();
+      else if (b) {
+        const i = +b.dataset.store;
+        if (stores.includes(i)) { if (stores.length > 1) stores = stores.filter((x) => x !== i); }
+        else stores = [...stores, i].sort();
+      } else return;
+      renderStores();
+    });
+    document.querySelectorAll('.c-filterbar').forEach((bar) => {
+      const pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'c-pill c-storepill';
+      pill.dataset.storePill = '';
+      pill.dataset.custom = 'StoreScope';
+      pill.setAttribute('aria-label', 'Stores');
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (document.body.classList.contains('sb-collapsed')) document.querySelector('.c-sb__open').click();
+        wsBtn.click();
+      });
+      bar.prepend(pill);
+    });
+    renderStores();
 
     sb.querySelectorAll('.c-sb__heading').forEach((h) => h.addEventListener('click', () => {
       const s = h.parentElement, name = h.firstChild.textContent;
