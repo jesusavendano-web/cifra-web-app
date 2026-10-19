@@ -14,7 +14,9 @@
   .c-auth__card { width: 100%; max-width: 400px; }
   .c-auth [hidden] { display: none !important; }
   .c-auth__logo { width: 40px; height: 40px; display: block; }
-  .c-auth__social img { width: 18px; height: 18px; display: block; }
+  .c-auth__social img { width: 20px; height: 20px; display: block; }
+  /* Título de la card: s-heading no permite tamaño, así que el h1 replica el del login de Shopify (20px / 650) */
+  .c-auth__title { margin: 0; font: 650 20px/28px var(--c-font); letter-spacing: -.2px; color: var(--c-text); }
 </style>
 </head>
 <body class="no-fade">
@@ -25,8 +27,8 @@
   separador "or" y botones de proveedor con su logo; el código llega por email.
   Pasos (hash): #login (default) → #check-email → home.html
                 #signup → #check-email → onboarding.html
-  Nativo → s-section, s-stack, s-grid, s-heading, s-text, s-email-field, s-text-field, s-button, s-divider, s-link
-  Custom → solo el centrado de la página (.c-auth)
+  Nativo → s-section, s-stack, s-grid, s-clickable (botones de proveedor, 48px de alto), s-text, s-email-field, s-text-field, s-button, s-divider, s-link
+  Custom → centrado de la página (.c-auth) y el título h1 (s-heading no tiene tamaño)
 -->
 <main class="c-auth" data-custom="AuthLayout">
 
@@ -37,8 +39,8 @@
         <s-stack gap="base">
           <img class="c-auth__logo" src="assets/logos/cifra.svg" alt="Cifra">
           <s-stack gap="small-200">
-            <s-heading data-mode-text="Log in|Create a Cifra account">Log in</s-heading>
-            <s-text color="subdued" data-mode-text="Continue to Cifra|Know your real profit in minutes">Continue to Cifra</s-text>
+            <h1 class="c-auth__title" data-mode-text="Log in to Cifra|Create your Cifra account">Log in to Cifra</h1>
+            <s-text color="subdued" data-mode-text="Welcome back. See your real profit across all your stores.|See your real profit in minutes, across all your stores.">Welcome back. See your real profit across all your stores.</s-text>
           </s-stack>
         </s-stack>
 
@@ -54,12 +56,12 @@
         </s-grid>
 
         <s-grid gridTemplateColumns="1fr 1fr" gap="base" class="c-auth__social">
-          <s-button inlineSize="fill" accessibilityLabel="Continue with Shopify" data-finish><img src="assets/logos/shopify-mark.svg" alt=""></s-button>
-          <s-button inlineSize="fill" accessibilityLabel="Continue with Google" data-finish><img src="assets/logos/google.svg" alt=""></s-button>
+          <s-clickable border="base" borderRadius="large" background="subdued" blockSize="48px" inlineSize="100%" accessibilityLabel="Continue with Shopify" data-finish><s-stack alignItems="center" justifyContent="center" blockSize="100%"><img src="assets/logos/shopify-mark.svg" alt=""></s-stack></s-clickable>
+          <s-clickable border="base" borderRadius="large" background="subdued" blockSize="48px" inlineSize="100%" accessibilityLabel="Continue with Google" data-finish><s-stack alignItems="center" justifyContent="center" blockSize="100%"><img src="assets/logos/google.svg" alt=""></s-stack></s-clickable>
         </s-grid>
 
-        <div data-mode="login"><s-stack direction="inline" gap="small-200" justifyContent="center"><s-text color="subdued">New to Cifra?</s-text><s-link href="#signup">Get started →</s-link></s-stack></div>
-        <div data-mode="signup" hidden><s-stack direction="inline" gap="small-200" justifyContent="center"><s-text color="subdued">Already have an account?</s-text><s-link href="#login">Log in →</s-link></s-stack></div>
+        <div data-mode="login"><s-stack direction="inline" gap="small-200" justifyContent="center"><s-text color="subdued">New to Cifra?</s-text><s-link href="#signup">Get started</s-link></s-stack></div>
+        <div data-mode="signup" hidden><s-stack direction="inline" gap="small-200" justifyContent="center"><s-text color="subdued">Already have an account?</s-text><s-link href="#login">Log in</s-link></s-stack></div>
       </s-stack>
     </s-section>
   </div>
@@ -71,7 +73,7 @@
         <s-stack gap="base">
           <img class="c-auth__logo" src="assets/logos/cifra.svg" alt="Cifra">
           <s-stack gap="small-200">
-            <s-heading>Check your email</s-heading>
+            <h1 class="c-auth__title">Check your email</h1>
             <s-text color="subdued">We sent a 6-digit code to <s-text type="strong" data-email-out>you@store.com</s-text>.</s-text>
           </s-stack>
         </s-stack>
