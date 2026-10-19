@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Integration · Omnisend</title>
+<meta name="shopify-api-key" content="prototype">
+<script src="https://cdn.shopify.com/shopifycloud/polaris-2.0-rc.js"></script>
+<link rel="stylesheet" href="shared/cifra.css">
+<script src="shared/cifra.js" defer></script>
+<style>
+  [data-state][hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<!--
+  Pantalla: Integrations › Omnisend (/app/integrations/omnisend)
+  Patrón API key, igual que Klaviyo. 100% nativo.
+  Flujo: pegar la API key → Save se habilita → Save valida la key → estado Active (#connected).
+  Conectado: qué se sincroniza (campañas, automatizaciones, ingresos atribuidos, costo de envíos SMS) y la key enmascarada.
+-->
+<s-page heading="Omnisend" inlineSize="base">
+  <s-link slot="breadcrumb-actions" href="integrations.html">Integrations</s-link>
+  <s-button slot="primary-action" variant="primary" disabled data-save>Save</s-button>
+  <s-button slot="secondary-actions" icon="refresh" disabled data-when-connected>Refresh</s-button>
+  <s-button slot="secondary-actions" icon="delete" tone="critical" disabled data-when-connected data-disconnect>Delete</s-button>
+
+  <!-- Sin conectar -->
+  <s-stack gap="base" data-state="idle">
+    <s-grid gridTemplateColumns="1fr 1fr" gap="base">
+      <s-section heading="Status">
+        <s-badge>Inactive</s-badge>
+      </s-section>
+      <s-section heading="Last sync">
+        <s-text color="subdued">Never synced</s-text>
+      </s-section>
+    </s-grid>
+
+    <s-section heading="Omnisend API Key">
+      <s-stack gap="base">
+        <s-paragraph>Enter your Omnisend API key to bring your email and SMS results into Cifra. We'll match campaign and automation revenue with your orders, and add SMS sending costs to your marketing expenses.</s-paragraph>
+        <s-password-field label="API key" labelAccessibilityVisibility="exclusive" placeholder="eg. 64f1c2a9b7e3d10012ab34cd-Xk3Lm9Qp2Rs7Tv1Wy5Za8Bc4De6Fg0Hj" data-key></s-password-field>
+        <s-text color="subdued">In Omnisend, go to Store settings › API keys › Create API key, and give it read access to Campaigns, Automations, Orders and Contacts. <s-link href="#" target="_blank">See the guide</s-link>.</s-text>
+      </s-stack>
+    </s-section>
+  </s-stack>
+
+  <!-- Conectado -->
+  <s-stack gap="base" data-state="connected" hidden>
+    <s-banner tone="success" heading="Omnisend connected" dismissible>We're importing the last 12 months of campaigns and automations. Revenue appears in your Marketing reports as it arrives.</s-banner>
+
+    <s-grid gridTemplateColumns="1fr 1fr" gap="base">
+      <s-section heading="Status">
+        <s-badge tone="success">Active</s-badge>
+      </s-section>
+      <s-section heading="Last sync">
+        <s-text>Oct 19, 2026 at 8:14 AM</s-text>
+      </s-section>
+    </s-grid>
+
+    <s-section heading="Synced data" padding="none">
+      <s-table>
+        <s-table-header-row>
+          <s-table-header>Data</s-table-header>
+          <s-table-header>Used in Cifra for</s-table-header>
+          <s-table-header format="numeric">Records</s-table-header>
+        </s-table-header-row>
+        <s-table-body>
+          <s-table-row><s-table-cell>Campaigns</s-table-cell><s-table-cell>Revenue and orders per email / SMS campaign</s-table-cell><s-table-cell>148</s-table-cell></s-table-row>
+          <s-table-row><s-table-cell>Automations</s-table-cell><s-table-cell>Revenue from flows (welcome, cart recovery…)</s-table-cell><s-table-cell>12</s-table-cell></s-table-row>
+          <s-table-row><s-table-cell>Attributed orders</s-table-cell><s-table-cell>Matched with Shopify orders to avoid double counting</s-table-cell><s-table-cell>3,906</s-table-cell></s-table-row>
+          <s-table-row><s-table-cell>SMS sending costs</s-table-cell><s-table-cell>Added to marketing expenses in Net Profit</s-table-cell><s-table-cell>$412.60</s-table-cell></s-table-row>
+        </s-table-body>
+      </s-table>
+    </s-section>
+
+    <s-section heading="Omnisend API Key">
+      <s-stack gap="small-200">
+        <s-text>••••••••••••••••••••••••Fg0Hj</s-text>
+        <s-text color="subdued">To use a different key, delete this connection and add it again.</s-text>
+      </s-stack>
+    </s-section>
+  </s-stack>
+</s-page>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const key = document.querySelector("[data-key]");
+  const save = document.querySelector("[data-save]");
+  const states = document.querySelectorAll("[data-state]");
+  const route = () => {
+    const connected = location.hash === "#connected";
+    states.forEach((s) => { s.hidden = s.dataset.state !== (connected ? "connected" : "idle"); });
+    document.querySelectorAll("[data-when-connected]").forEach((b) => { b.disabled = !connected; });
+    save.disabled = connected || !(key.value || "").trim();
+  };
+  window.addEventListener("hashchange", route);
+  route();
+  key.addEventListener("input", () => { key.error = ""; save.disabled = !(key.value || "").trim(); });
+  save.addEventListener("click", () => {
+    if ((key.value || "").trim().length < 20) { key.error = "This API key isn't valid. Check that you copied the whole key."; return; }
+    location.hash = "connected";
+  });
+  document.querySelector("[data-disconnect]").addEventListener("click", () => { key.value = ""; location.hash = ""; });
+});
+</script>
+
+</body>
+</html>

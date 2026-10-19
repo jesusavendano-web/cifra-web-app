@@ -32,7 +32,7 @@
       ['calendar-time', 'Schedules', 'schedule.html'],
     ] },
     { title: 'Data', items: [
-      ['connect', 'Integrations', 'integrations.html', { match: ['integrations.html', 'integration-meta.html', 'integration-klaviyo.html'] }],
+      ['connect', 'Integrations', 'integrations.html', { match: ['integrations.html', 'integration-meta.html', 'integration-klaviyo.html', 'integration-amazon.html', 'integration-omnisend.html'] }],
       ['cash-dollar', 'Costs', 'settings-cost-products.html', { match: ['settings-cost-products.html', 'settings-cost-custom.html', 'settings-cost-shipping.html', 'settings-cost-gateways.html'] }],
     ] },
     { title: 'Favorites', items: [
