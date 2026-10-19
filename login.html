@@ -9,102 +9,91 @@
 <link rel="stylesheet" href="shared/cifra.css">
 <script src="shared/cifra.js" defer></script>
 <style>
-  .c-auth { min-height: calc(100vh - 54px); display: grid; place-items: center; padding: 48px 16px 96px; }
-  .c-auth__card[hidden] { display: none; }
-  .c-auth__card { width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .c-auth__logo { width: 48px; height: 48px; margin-bottom: 28px; }
-  .c-auth h1 { margin: 0 0 6px; font-size: 20px; line-height: 28px; font-weight: 650; letter-spacing: -.2px; }
-  .c-auth__sub { margin: 0 0 28px; color: var(--c-text-secondary); }
-  .c-auth__stack { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-  .c-auth__btn {
-    display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 44px; padding: 0 16px;
-    border: 0; border-radius: 12px; font: inherit; font-weight: 550; cursor: pointer; text-decoration: none;
-    background: var(--c-surface); color: var(--c-text); box-shadow: rgba(0,0,0,.12) 0 0 0 1px, rgba(0,0,0,.05) 0 1px 2px;
-  }
-  .c-auth__btn:hover { background: var(--c-surface-hover); }
-  .c-auth__btn:focus-visible, .c-auth__input:focus-visible { outline: 2px solid #005bd3; outline-offset: 1px; }
-  .c-auth__btn img { width: 18px; height: 18px; }
-  .c-auth__btn--primary { background: #164af3; color: #fff; box-shadow: inset 0 -1px 0 rgba(0,0,0,.2), 0 1px 2px rgba(22,74,243,.3); }
-  .c-auth__btn--primary:hover { background: #0f3fd8; }
-  .c-auth__btn--primary img { filter: brightness(0) invert(1); }
-  .c-auth__btn[disabled] { opacity: .5; cursor: default; }
-  .c-auth__input {
-    width: 100%; height: 44px; padding: 0 14px; border: 0; border-radius: 12px; font: inherit; font-size: 14px; color: var(--c-text);
-    background: var(--c-surface); box-shadow: rgba(0,0,0,.16) 0 0 0 1px inset; text-align: left;
-  }
-  .c-auth__input--code { text-align: center; font-size: 18px; letter-spacing: 6px; font-variant-numeric: tabular-nums; }
-  .c-auth__or { display: flex; align-items: center; gap: 12px; width: 100%; margin: 8px 0; color: var(--c-text-tertiary); font-size: var(--c-fs-small); }
-  .c-auth__or::before, .c-auth__or::after { content: ""; flex: 1; border-top: 1px solid var(--c-border-strong); }
-  .c-auth__link { background: none; border: 0; padding: 0; font: inherit; color: var(--c-text-secondary); cursor: pointer; text-decoration: none; }
-  .c-auth__link:hover { color: var(--c-text); text-decoration: underline; }
-  .c-auth__foot { margin-top: 28px; color: var(--c-text-secondary); }
-  .c-auth__foot a { color: var(--c-text); font-weight: 550; text-decoration: none; }
-  .c-auth__foot a:hover { text-decoration: underline; }
-  .c-auth__legal { margin: -64px 0 0; padding-bottom: 24px; text-align: center; font-size: var(--c-fs-small); color: var(--c-text-tertiary); padding: 0 16px; }
-  .c-auth__legal a { color: inherit; }
-  .c-auth__hint { margin: 2px 0 0; font-size: var(--c-fs-small); color: var(--c-text-tertiary); }
-  .c-auth__mail { width: 56px; height: 56px; border-radius: 16px; background: #e8eefe; color: #164af3; display: grid; place-items: center; margin-bottom: 24px; }
+  /* Solo el layout de la página es custom; todo lo de adentro es <s-*>. */
+  .c-auth { min-height: 100vh; display: grid; place-items: center; padding: 48px 16px; }
+  .c-auth__card { width: 100%; max-width: 400px; }
+  .c-auth [hidden] { display: none !important; }
+  .c-auth__logo { width: 40px; height: 40px; display: block; }
+  .c-auth__social img { width: 18px; height: 18px; display: block; }
 </style>
 </head>
 <body class="no-fade">
 
 <!--
-  Pantalla: Log in / Sign up de la web app (/login, /signup). Nueva: en el admin de Shopify no existe porque
-  Shopify autentica. Inspirada en el login de Linear: una columna, logo, métodos de acceso y "magic code" por email.
-  Pasos (hash): #login (default) → #email → #check-email → home.html
-                #signup → #email → #check-email → onboarding.html
-  Custom → todo (layout de auth, botones de proveedor, campo de código).
+  Pantalla: Log in / Sign up de la web app (/login, /signup). Nueva: dentro del admin Shopify ya autentica.
+  Sigue el login actual de Shopify (accounts.shopify.com): card blanca, email primero con botón primario,
+  separador "or" y botones de proveedor con su logo; el código llega por email.
+  Pasos (hash): #login (default) → #check-email → home.html
+                #signup → #check-email → onboarding.html
+  Nativo → s-section, s-stack, s-grid, s-heading, s-text, s-email-field, s-text-field, s-button, s-divider, s-link
+  Custom → solo el centrado de la página (.c-auth)
 -->
-<main class="c-auth" data-custom="AuthPage">
+<main class="c-auth" data-custom="AuthLayout">
 
-  <!-- Paso 1: métodos -->
-  <section class="c-auth__card" data-step="start">
-    <img class="c-auth__logo" src="assets/logos/cifra.svg" alt="Cifra">
-    <h1 data-mode-text="Log in to Cifra|Create your Cifra account">Log in to Cifra</h1>
-    <p class="c-auth__sub" data-mode-text="Profit analytics for your Shopify store|Know your real profit in minutes">Profit analytics for your Shopify store</p>
-    <div class="c-auth__stack">
-      <a class="c-auth__btn c-auth__btn--primary" href="#" data-finish><img src="assets/logos/shopify-mark.svg" alt="">Continue with Shopify</a>
-      <a class="c-auth__btn" href="#" data-finish><img src="assets/logos/google.svg" alt="">Continue with Google</a>
-      <a class="c-auth__btn" href="#email" data-go="email"><s-icon type="email" size="small"></s-icon>Continue with email</a>
-    </div>
-    <p class="c-auth__foot" data-mode="login">Don't have an account? <a href="#signup">Sign up</a></p>
-    <p class="c-auth__foot" data-mode="signup" hidden>Already have an account? <a href="#login">Log in</a></p>
-  </section>
+  <!-- Paso 1: email + proveedores -->
+  <div class="c-auth__card" data-step="start">
+    <s-section padding="base">
+      <s-stack gap="large-200" padding="base">
+        <s-stack gap="base">
+          <img class="c-auth__logo" src="assets/logos/cifra.svg" alt="Cifra">
+          <s-stack gap="small-200">
+            <s-heading data-mode-text="Log in|Create a Cifra account">Log in</s-heading>
+            <s-text color="subdued" data-mode-text="Continue to Cifra|Know your real profit in minutes">Continue to Cifra</s-text>
+          </s-stack>
+        </s-stack>
 
-  <!-- Paso 2: email -->
-  <section class="c-auth__card" data-step="email" hidden>
-    <img class="c-auth__logo" src="assets/logos/cifra.svg" alt="Cifra">
-    <h1>What's your email address?</h1>
-    <p class="c-auth__sub">We'll send you a code to sign in.</p>
-    <form class="c-auth__stack" data-email-form novalidate>
-      <input class="c-auth__input" type="email" name="email" placeholder="Enter your email address…" aria-label="Email address" autocomplete="email" required>
-      <button class="c-auth__btn c-auth__btn--primary" type="submit" disabled>Continue with email</button>
-    </form>
-    <p class="c-auth__foot"><a class="c-auth__link" href="#" data-back>Back to all options</a></p>
-  </section>
+        <s-stack gap="base">
+          <s-email-field label="Email" name="email" autocomplete="email" placeholder="you@store.com" data-email></s-email-field>
+          <s-button variant="primary" inlineSize="fill" data-email-continue>Continue with email</s-button>
+        </s-stack>
 
-  <!-- Paso 3: código -->
-  <section class="c-auth__card" data-step="check-email" hidden>
-    <span class="c-auth__mail"><s-icon type="email"></s-icon></span>
-    <h1>Check your email</h1>
-    <p class="c-auth__sub">We sent a 6-digit code to <strong data-email>you@store.com</strong>. It expires in 10 minutes.</p>
-    <form class="c-auth__stack" data-code-form novalidate>
-      <input class="c-auth__input c-auth__input--code" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="Login code" autocomplete="one-time-code">
-      <button class="c-auth__btn c-auth__btn--primary" type="submit" disabled>Continue</button>
-      <p class="c-auth__hint">Prototype: any 6 digits work.</p>
-    </form>
-    <p class="c-auth__foot"><button class="c-auth__link" type="button" data-resend>Resend code</button> · <a class="c-auth__link" href="#email" data-go="email">Use a different email</a></p>
-  </section>
+        <s-grid gridTemplateColumns="1fr auto 1fr" gap="base" alignItems="center">
+          <s-divider></s-divider>
+          <s-text color="subdued">or</s-text>
+          <s-divider></s-divider>
+        </s-grid>
+
+        <s-grid gridTemplateColumns="1fr 1fr" gap="base" class="c-auth__social">
+          <s-button inlineSize="fill" accessibilityLabel="Continue with Shopify" data-finish><img src="assets/logos/shopify-mark.svg" alt=""></s-button>
+          <s-button inlineSize="fill" accessibilityLabel="Continue with Google" data-finish><img src="assets/logos/google.svg" alt=""></s-button>
+        </s-grid>
+
+        <div data-mode="login"><s-stack direction="inline" gap="small-200" justifyContent="center"><s-text color="subdued">New to Cifra?</s-text><s-link href="#signup">Get started →</s-link></s-stack></div>
+        <div data-mode="signup" hidden><s-stack direction="inline" gap="small-200" justifyContent="center"><s-text color="subdued">Already have an account?</s-text><s-link href="#login">Log in →</s-link></s-stack></div>
+      </s-stack>
+    </s-section>
+  </div>
+
+  <!-- Paso 2: código por email -->
+  <div class="c-auth__card" data-step="check-email" hidden>
+    <s-section padding="base">
+      <s-stack gap="large-200" padding="base">
+        <s-stack gap="base">
+          <img class="c-auth__logo" src="assets/logos/cifra.svg" alt="Cifra">
+          <s-stack gap="small-200">
+            <s-heading>Check your email</s-heading>
+            <s-text color="subdued">We sent a 6-digit code to <s-text type="strong" data-email-out>you@store.com</s-text>.</s-text>
+          </s-stack>
+        </s-stack>
+        <s-stack gap="base">
+          <s-text-field label="Code" name="code" autocomplete="one-time-code" maxLength="6" placeholder="000000" details="Prototype: any 6 digits work." data-code></s-text-field>
+          <s-button variant="primary" inlineSize="fill" data-code-continue>Log in</s-button>
+        </s-stack>
+        <s-stack direction="inline" gap="base" justifyContent="center">
+          <s-link data-resend>Resend code</s-link>
+          <s-link href="#" data-back>Use a different email</s-link>
+        </s-stack>
+      </s-stack>
+    </s-section>
+  </div>
 
 </main>
-
-<p class="c-auth__legal" data-custom="AuthLegal">By continuing, you agree to Cifra's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   let mode = "login";
   const steps = document.querySelectorAll("[data-step]");
-  const show = (step) => steps.forEach((s) => { s.hidden = s.dataset.step !== step; if (!s.hidden) s.querySelector("input")?.focus(); });
+  const show = (step) => steps.forEach((s) => { s.hidden = s.dataset.step !== step; });
   const setMode = (m) => {
     mode = m;
     document.querySelectorAll("[data-mode]").forEach((n) => { n.hidden = n.dataset.mode !== m; });
@@ -114,27 +103,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const finish = () => { location.href = mode === "signup" ? "onboarding.html" : "home.html"; };
   const route = () => {
     const h = location.hash.slice(1);
-    if (h === "signup" || h === "login" || !h) { setMode(h || "login"); show("start"); }
-    else if (h === "email" || h === "check-email") show(h);
+    if (h === "check-email") show(h);
+    else { setMode(h === "signup" ? "signup" : "login"); show("start"); }
   };
   window.addEventListener("hashchange", route);
   route();
 
-  document.querySelectorAll("[data-finish]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); finish(); }));
-  document.querySelector("[data-back]").addEventListener("click", (e) => { e.preventDefault(); location.hash = mode; });
+  document.querySelectorAll("[data-finish]").forEach((b) => b.addEventListener("click", finish));
 
-  const email = document.querySelector("[data-email-form] input"), emailBtn = document.querySelector("[data-email-form] button");
-  email.addEventListener("input", () => { emailBtn.disabled = !/^\S+@\S+\.\S+$/.test(email.value); });
-  document.querySelector("[data-email-form]").addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (emailBtn.disabled) return;
-    document.querySelector("[data-email]").textContent = email.value;
+  const email = document.querySelector("[data-email]");
+  const sendCode = () => {
+    const v = (email.value || "").trim();
+    if (!/^\S+@\S+\.\S+$/.test(v)) { email.error = "Enter a valid email address"; return; }
+    email.error = "";
+    document.querySelector("[data-email-out]").textContent = v;
     location.hash = "check-email";
-  });
+  };
+  document.querySelector("[data-email-continue]").addEventListener("click", sendCode);
+  email.addEventListener("keydown", (e) => { if (e.key === "Enter") sendCode(); });
 
-  const code = document.querySelector("[data-code-form] input"), codeBtn = document.querySelector("[data-code-form] button");
-  code.addEventListener("input", () => { code.value = code.value.replace(/\D/g, ""); codeBtn.disabled = code.value.length !== 6; if (code.value.length === 6) finish(); });
-  document.querySelector("[data-code-form]").addEventListener("submit", (e) => { e.preventDefault(); if (!codeBtn.disabled) finish(); });
+  const code = document.querySelector("[data-code]");
+  const login = () => {
+    if (!/^\d{6}$/.test((code.value || "").trim())) { code.error = "Enter the 6-digit code"; return; }
+    finish();
+  };
+  document.querySelector("[data-code-continue]").addEventListener("click", login);
+  code.addEventListener("input", () => { code.error = ""; if (/^\d{6}$/.test(code.value)) finish(); });
+  code.addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+  document.querySelector("[data-back]").addEventListener("click", (e) => { e.preventDefault(); location.hash = mode; });
   document.querySelector("[data-resend]").addEventListener("click", (e) => { e.target.textContent = "Code sent"; setTimeout(() => { e.target.textContent = "Resend code"; }, 2000); });
 });
 </script>
